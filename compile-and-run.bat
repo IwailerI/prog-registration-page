@@ -2,3 +2,4 @@
 del main.exe
 go build main.go
 main run
+pause

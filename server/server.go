@@ -8,15 +8,15 @@ import (
 	"web-server/registrationform"
 )
 
-var template []byte
+var registerPage, failurePage, succesPage []byte
 var Port string
 
 func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		w.Write(template)
+		w.Write(registerPage)
 
-	case http.MethodPut:
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, "Form data incorrect", http.StatusBadRequest)
@@ -37,12 +37,31 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 		if ok, reason := entry.IsValid(); !ok {
 			w.Header().Add("accepted", "false")
 			w.Header().Add("rejection-reason", reason)
+			http.Redirect(w, r, "/failure", http.StatusFound)
 		} else {
 			database.Add(entry)
+			log.Printf("Added entry %v\n", entry)
 			w.Header().Add("accepted", "true")
+			http.Redirect(w, r, "/succes", http.StatusFound)
 		}
-		http.Redirect(w, r, "/", http.StatusFound)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
 
+func succesPageHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		w.Write(succesPage)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func failurePageHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		w.Write(failurePage)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -50,7 +69,17 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func Start() {
 	var err error
-	template, err = os.ReadFile("template.html")
+	registerPage, err = os.ReadFile("register.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	failurePage, err = os.ReadFile("failure.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	succesPage, err = os.ReadFile("succes.html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,5 +96,7 @@ func Start() {
 	log.Println("Server listening on port " + Port)
 
 	http.HandleFunc("/", registerPageHandler)
+	http.HandleFunc("/succes", succesPageHandler)
+	http.HandleFunc("/failure", failurePageHandler)
 	log.Fatal(http.ListenAndServe(":"+Port, nil))
 }

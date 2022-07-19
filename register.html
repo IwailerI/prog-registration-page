@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+</head>
+
+<body>
+    <form action="/" method="POST">
+        <table>
+            <tr>
+                <td><b>имя*</b>:</td>
+                <td><input type="text" name="vFirstName" value="" maxlength="32" size="54" required></td>
+            </tr>
+            <tr>
+                <td><b>фамилия*</b>:</td>
+                <td><input type="text" name="vLastName" value="" maxlength="32" size="54" required></td>
+            </tr>
+            <tr>
+                <td>e-mail родителя:</td>
+                <!-- TODO: add regex -->
+                <td ><input type="text" name="vEMail" value="" maxlength="32" size="54" placeholder="pasts@piemers.lv"></td>
+            </tr>
+            <tr>
+                <td><b>уч. заведение*</b>:</td>
+                <td><input type="text" name="vSchool" value="" maxlength="32" size="54" required></td>
+            </tr>
+            <tr>
+                <td><b>класс или курс (летом указывать в котором был)*</b>:</td>
+                <td><input type="text" name="vClass" value="" maxlength="20" size="54" required></td>
+            </tr>
+            <tr>
+                <td><b>телефон(ы)*</b>:</td>
+                <!-- regex: https://regex101.com/r/k0B25G -->
+                <td><input type="tel" name="vPhone" value="" maxlength="50" size="54" pattern="^([^0-9]*?(\+[0-9]{1,3})?(?: |-)?((?:[0-9](?: |-)?){7}[0-9])[^0-9]*?)*$" required placeholder="20000000 или +371-20000000"></td>
+            </tr>
+            <tr>
+                <td>комментарий( в частности, район проживания,):</td>
+                <td><textarea name="vComment" rows="10" cols="54" maxlength="2000"></textarea></td>
+            </tr>
+            <tr>
+                <td colspan="2"><b>* - обязательные поля</b></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button type="submit">зарегистрироваться</button></td>
+            </tr>
+        </table>
+    </form>
+</body>
+
+</html>
