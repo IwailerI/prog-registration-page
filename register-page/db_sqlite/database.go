@@ -50,7 +50,8 @@ func (d *Database) Create() error {
 		school text,
 		class text,
 		phones text,
-		comment text
+		comment text,
+		time timestamp default current_timestamp
 	);
 	`)
 	return err
@@ -58,14 +59,18 @@ func (d *Database) Create() error {
 
 func (d *Database) Add(form registrationform.Form) error {
 	if d.DebugPrint {
-		log.Printf("Added entry %#v\n", form)
+		log.Printf("Added entry %v\n", form.EscapeCSV())
 	}
+
+	f := form.EscapeSQL()
+
 	_, err := d.DB.Exec(fmt.Sprintf(`
 	insert into RegistrationRequests 
-		(firstname, lastname, email, school, class, phones, comment)
-		values(%q, %q, %q, %q, %q, %q, %q)
+		(firstname, lastname, email, school, class, phones, comment, time)
+		values('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
 	`,
-		form.Firstname, form.Lastname, form.Email, form.School, form.Class, form.GetPhones(), form.Comment,
+		f.Firstname, f.Lastname, f.Email, f.School, f.Class, f.Phones, f.Comment, f.Time,
 	))
+
 	return err
 }

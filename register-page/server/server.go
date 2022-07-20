@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 	"web-server/db_csv"
 	"web-server/db_sqlite"
 	"web-server/registrationform"
@@ -84,13 +85,22 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 		entry.ParsePhones(r.FormValue("vPhone"))
 		entry.Comment = r.FormValue("vComment")
 
+		entry.Time = time.Now()
+
 		if ok, reason := entry.IsValid(); !ok {
 			log.Printf("Failed to add entry %#v\n", entry)
 			w.Header().Add("accepted", "false")
 			w.Header().Add("rejection-reason", reason)
 			http.Redirect(w, r, "/failure", http.StatusFound)
 		} else {
-			DB.Add(entry)
+			err = DB.Add(entry)
+			if err != nil {
+				log.Println(err)
+				w.Header().Add("accepted", "false")
+				w.Header().Add("rejection-reason", "internal-server-error")
+				http.Redirect(w, r, "/failure", http.StatusFound)
+				return
+			}
 			w.Header().Add("accepted", "true")
 			http.Redirect(w, r, "/succes", http.StatusFound)
 		}

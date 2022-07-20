@@ -58,25 +58,20 @@ func (d *Database) Create() error {
 
 func (d *Database) Add(form registrationform.Form) error {
 	if d.DebugPrint {
-		log.Printf("Added entry %#v\n", form)
+		log.Printf("Added entry %v\n", form.EscapeCSV())
 	}
-	// var fname, lname, email, school, class, phone, comment string
-	// fname = strings.ReplaceAll(form.Firstname, ",", "\\,")
-	// lname = strings.ReplaceAll(form.Lastname, ",", "\\,")
-	// email = strings.ReplaceAll(form.Email, ",", "\\,")
-	// school = strings.ReplaceAll(form.School, ",", "\\,")
-	// class = strings.ReplaceAll(form.Class, ",", "\\,")
-	// phone = strings.ReplaceAll(form.GetPhones(), ",", "\\,")
-	// comment = strings.ReplaceAll(form.Comment, ",", "\\,")
 
-	_, err := fmt.Fprintf(d.w, "%q,%q,%q,%q,%q,%q,%q\n",
-		form.Firstname,
-		form.Lastname,
-		form.Email,
-		form.School,
-		form.Class,
-		form.GetPhones(),
-		form.Comment,
+	f := form.EscapeCSV()
+
+	_, err := fmt.Fprintf(d.w, `"%s","%s","%s","%s","%s","%s","%s","%s"`+"\n",
+		f.Firstname,
+		f.Lastname,
+		f.Email,
+		f.School,
+		f.Class,
+		f.Phones,
+		f.Comment,
+		f.Time,
 	)
 
 	d.w.Flush()
