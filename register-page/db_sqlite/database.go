@@ -1,12 +1,9 @@
 package db_sqlite
 
 import (
-	"bufio"
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 	"web-server/registrationform"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -71,38 +68,4 @@ func (d *Database) Add(form registrationform.Form) error {
 		form.Firstname, form.Lastname, form.Email, form.School, form.Class, form.GetPhones(), form.Comment,
 	))
 	return err
-}
-
-func (d *Database) Export(filename string) error {
-	fout, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer fout.Close()
-
-	out := bufio.NewWriter(fout)
-	defer out.Flush()
-
-	rows, err := d.DB.Query("SELECT * FROM RegistrationRequests")
-	if err != nil {
-		return err
-	}
-
-	var fname, lname, email, school, class, phone, comment string
-	var id int64
-
-	for rows.Next() {
-		rows.Scan(&id, &fname, &lname, &email, &school, &class, &phone, &comment)
-		fname = strings.ReplaceAll(fname, ",", "\\,")
-		lname = strings.ReplaceAll(lname, ",", "\\,")
-		email = strings.ReplaceAll(email, ",", "\\,")
-		school = strings.ReplaceAll(school, ",", "\\,")
-		class = strings.ReplaceAll(class, ",", "\\,")
-		phone = strings.ReplaceAll(phone, ",", "\\,")
-		comment = strings.ReplaceAll(comment, ",", "\\,")
-
-		fmt.Fprintf(out, "%d,%s,%s,%s,%s,%s,%s,%s\n", id, fname, lname, email, school, class, phone, comment)
-	}
-
-	return nil
 }

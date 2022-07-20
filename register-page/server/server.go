@@ -16,7 +16,6 @@ type Database interface {
 	Close()
 	Create() error
 	Add(registrationform.Form) error
-	Export(string) error
 	SetDebugPrint(bool)
 }
 
@@ -165,14 +164,4 @@ func Start() {
 	http.HandleFunc("/succes", succesPageHandler)
 	http.HandleFunc("/failure", failurePageHandler)
 	log.Fatal(http.ListenAndServe(":"+Port, nil))
-}
-
-func CreateDB() error {
-	initDB()
-	return DB.Create()
-}
-
-func ExportDB(filename string) error {
-	initDB()
-	return DB.Export(filename)
 }

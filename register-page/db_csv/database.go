@@ -3,10 +3,8 @@ package db_csv
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"strings"
 	"web-server/registrationform"
 )
 
@@ -62,56 +60,26 @@ func (d *Database) Add(form registrationform.Form) error {
 	if d.DebugPrint {
 		log.Printf("Added entry %#v\n", form)
 	}
-	var fname, lname, email, school, class, phone, comment string
-	fname = strings.ReplaceAll(form.Firstname, ",", "\\,")
-	lname = strings.ReplaceAll(form.Lastname, ",", "\\,")
-	email = strings.ReplaceAll(form.Email, ",", "\\,")
-	school = strings.ReplaceAll(form.School, ",", "\\,")
-	class = strings.ReplaceAll(form.Class, ",", "\\,")
-	phone = strings.ReplaceAll(form.GetPhones(), ",", "\\,")
-	comment = strings.ReplaceAll(form.Comment, ",", "\\,")
+	// var fname, lname, email, school, class, phone, comment string
+	// fname = strings.ReplaceAll(form.Firstname, ",", "\\,")
+	// lname = strings.ReplaceAll(form.Lastname, ",", "\\,")
+	// email = strings.ReplaceAll(form.Email, ",", "\\,")
+	// school = strings.ReplaceAll(form.School, ",", "\\,")
+	// class = strings.ReplaceAll(form.Class, ",", "\\,")
+	// phone = strings.ReplaceAll(form.GetPhones(), ",", "\\,")
+	// comment = strings.ReplaceAll(form.Comment, ",", "\\,")
 
-	_, err := fmt.Fprintf(d.w, "%s,%s,%s,%s,%s,%s,%s\n", fname, lname, email, school, class, phone, comment)
+	_, err := fmt.Fprintf(d.w, "%q,%q,%q,%q,%q,%q,%q\n",
+		form.Firstname,
+		form.Lastname,
+		form.Email,
+		form.School,
+		form.Class,
+		form.GetPhones(),
+		form.Comment,
+	)
 
 	d.w.Flush()
 
 	return err
-}
-
-func (d *Database) Export(filename string) error {
-	if filename == "database.csv" {
-		return nil
-	}
-
-	was_open := d.is_open
-	if was_open {
-		d.Close()
-	}
-
-	fin, err := os.Open("database.csv")
-	if err != nil {
-		return err
-	}
-	in := bufio.NewReader(fin)
-
-	fout, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	out := bufio.NewWriter(fout)
-
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-
-	out.Flush()
-	fout.Close()
-	fin.Close()
-
-	if was_open {
-		return d.Open()
-	}
-
-	return nil
 }

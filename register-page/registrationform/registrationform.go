@@ -28,7 +28,7 @@ func (p Phone) String() string {
 var regex_phone = regexp.MustCompile(`(?P<country>\+[0-9]{1,3})?(?: |-)?(?P<numer>(?:[0-9](?: |-)?){7}[0-9])`)
 
 // https://regex101.com/r/po7lKn
-var regex_email = regexp.MustCompile(`^\s*(?P<name>[a-z0-9!#$%&'*+/=?^_\x60{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_\x60{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?P<domain>(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*$`)
+var regex_email = regexp.MustCompile(`^\s*([^\s@]+)@([^\s@]+.[^\s@]+)\s*$`)
 
 func extractDigits(s string) string {
 	res := []rune{}
