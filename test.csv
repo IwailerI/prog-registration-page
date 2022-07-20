@@ -1,0 +1,11 @@
+1,1,2,,3,4,+37120000000,
+2,1,2,,3,4,+37120000000,
+3,1,2,,3,4,+37120000000,
+4,1,2,,3,4,+37120000000,
+5,FirstName,LastName,email@someone.lv,School,Class,+37117337117,Comment.
+6,F\,i\,rs\,tName\,,\,L\,ast\,Nam\,e,email@someone.lv,\,Sc\,h\,oo\,l,\,C\,la\,s\,s\,,+37117337117,Com\,m\,en\,t\,.\,\,\,\,
+7,F\,i\,rs\,tName\,,\,L\,ast\,Nam\,e,email@someone.lv,\,Sc\,h\,oo\,l,\,C\,la\,s\,s\,,+37117337117,Com\,m\,en\,t\,.\,\,\,\r\n\r\nas\r\na\r\n\r\na\r\na\r\na\r\na\r\na\,
+8,F\,i\,rs\,tName\,,\,L\,ast\,Nam\,e,email@someone.lv,\,Sc\,h\,oo\,l,\,C\,la\,s\,s\,,+37117337117,Com\,m\,en\,t\,.\,\,\,\r\n\r\nas\r\na\r\n\\\r\na\r\na\\\r\na\r\na\r\na\,
+9,1,2,email@someone.lv,3,4,+37117337117,ab'a
+10,1,2,email@someone.lv,3,4,+37117337117,ab`a
+11,1,2,email@someone.lv,3,4,+37117337117,ab`a

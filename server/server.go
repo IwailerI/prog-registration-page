@@ -10,6 +10,7 @@ import (
 
 var registerPage, failurePage, succesPage []byte
 var Port string
+var DebugPrint bool
 
 func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -17,6 +18,9 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(registerPage)
 
 	case http.MethodPost:
+		if DebugPrint {
+			log.Println("Aplication submited.")
+		}
 		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, "Form data incorrect", http.StatusBadRequest)
@@ -35,12 +39,12 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 		entry.Comment = r.FormValue("vComment")
 
 		if ok, reason := entry.IsValid(); !ok {
+			log.Printf("Failed to add entry %#v\n", entry)
 			w.Header().Add("accepted", "false")
 			w.Header().Add("rejection-reason", reason)
 			http.Redirect(w, r, "/failure", http.StatusFound)
 		} else {
 			database.Add(entry)
-			log.Printf("Added entry %v\n", entry)
 			w.Header().Add("accepted", "true")
 			http.Redirect(w, r, "/succes", http.StatusFound)
 		}
@@ -83,6 +87,8 @@ func Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	database.DebugPrint = DebugPrint
 
 	if err = database.Open(); err != nil {
 		log.Fatal(err)
