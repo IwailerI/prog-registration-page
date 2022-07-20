@@ -1,16 +1,63 @@
 package server
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
-	"web-server/database"
+	"strings"
+	"web-server/db_csv"
+	"web-server/db_sqlite"
 	"web-server/registrationform"
 )
 
+type Database interface {
+	Open() error
+	Close()
+	Create() error
+	Add(registrationform.Form) error
+	Export(string) error
+	SetDebugPrint(bool)
+}
+
+var DB Database
+
 var registerPage, failurePage, succesPage []byte
+
 var Port string
 var DebugPrint bool
+
+type DatabaseType int
+
+const (
+	SQLite DatabaseType = iota
+	CSV
+)
+
+var databaseTypeString = [...]string{"sqlite", "csv"}
+
+func (dt DatabaseType) String() string {
+	if int(dt) >= len(databaseTypeString) || dt < 0 {
+		return "error"
+	}
+	return databaseTypeString[dt]
+}
+
+func (dt *DatabaseType) Set(v string) error {
+	for i, n := range databaseTypeString {
+		if v == n {
+			*dt = DatabaseType(i)
+			return nil
+		}
+	}
+	return errors.New("must be one of " + strings.Join(databaseTypeString[:], ", "))
+}
+
+func (dt *DatabaseType) Type() string {
+	return "DatabaseType"
+}
+
+var DBType DatabaseType = SQLite
 
 func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -44,7 +91,7 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("rejection-reason", reason)
 			http.Redirect(w, r, "/failure", http.StatusFound)
 		} else {
-			database.Add(entry)
+			DB.Add(entry)
 			w.Header().Add("accepted", "true")
 			http.Redirect(w, r, "/succes", http.StatusFound)
 		}
@@ -71,6 +118,19 @@ func failurePageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func initDB() {
+	switch DBType {
+	case SQLite:
+		DB = new(db_sqlite.Database)
+	case CSV:
+		DB = new(db_csv.Database)
+	default:
+		log.Fatal("Unsuported database type")
+	}
+
+	DB.SetDebugPrint(DebugPrint)
+}
+
 func Start() {
 	var err error
 	registerPage, err = os.ReadFile("register.html")
@@ -88,14 +148,14 @@ func Start() {
 		log.Fatal(err)
 	}
 
-	database.DebugPrint = DebugPrint
+	initDB()
 
-	if err = database.Open(); err != nil {
+	if err = DB.Open(); err != nil {
 		log.Fatal(err)
 	}
-	defer database.Close()
+	defer DB.Close()
 
-	if err = database.Create(); err != nil {
+	if err = DB.Create(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -105,4 +165,14 @@ func Start() {
 	http.HandleFunc("/succes", succesPageHandler)
 	http.HandleFunc("/failure", failurePageHandler)
 	log.Fatal(http.ListenAndServe(":"+Port, nil))
+}
+
+func CreateDB() error {
+	initDB()
+	return DB.Create()
+}
+
+func ExportDB(filename string) error {
+	initDB()
+	return DB.Export(filename)
 }
