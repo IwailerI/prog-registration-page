@@ -13,5 +13,5 @@ ShortNames=0
 Timeout=
 NoTXN=0
 SyncPragma=
-StepAPI=0
+StepAPI=1
 Database=D:\All\Coding\work\progmeistars-web-server\register-page\database.db

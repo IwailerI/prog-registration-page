@@ -2,6 +2,7 @@ package db_sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"web-server/registrationform"
@@ -10,8 +11,9 @@ import (
 )
 
 type Database struct {
-	*sql.DB
 	DebugPrint bool
+	driver     string
+	path       string
 }
 
 func (d *Database) SetDebugPrint(v bool) {
@@ -19,19 +21,19 @@ func (d *Database) SetDebugPrint(v bool) {
 }
 
 func (d *Database) Open() error {
-	var err error
+	d.driver = "sqlite3"
+	d.path = "./database.db"
 
-	d.DB, err = sql.Open("sqlite3", "./database.db")
 	if d.DebugPrint {
-		log.Println("Opened database:", err)
+		log.Println("Opened database:", d.path)
 	}
-	return err
+
+	return nil
 }
 
 func (d *Database) Close() {
-	if d.DB != nil {
-		d.DB.Close()
-	}
+	d.driver = ""
+	d.path = ""
 	if d.DebugPrint {
 		log.Println("Closed database")
 	}
@@ -41,36 +43,79 @@ func (d *Database) Create() error {
 	if d.DebugPrint {
 		log.Println("Creating Database")
 	}
-	_, err := d.DB.Exec(`
+
+	db, err := sql.Open(d.driver, d.path)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
 	create table if not exists RegistrationRequests (
 		student_id integer not null primary key,
-		firstname text,
-		lastname text,
-		email text,
-		school text,
-		class text,
-		phones text,
-		comment text,
+		firstname text not null,
+		lastname text not null,
+		remark text not null,
+		class text not null,
+		school text not null,
+		phones text not null,
+		email text not null,
+		info text not null,
 		time timestamp default current_timestamp
 	);
 	`)
-	return err
+
+	if err != nil {
+		err2 := tx.Rollback()
+		if err2 != nil {
+			return errors.New(err.Error() + "\n" + err2.Error())
+		}
+		return err
+	} else {
+		err = tx.Commit()
+		return err
+	}
 }
 
 func (d *Database) Add(form registrationform.Form) error {
 	if d.DebugPrint {
-		log.Printf("Added entry %v\n", form.EscapeCSV())
+		log.Printf("Adding entry %#v\n", form.EscapeSQL())
 	}
+
+	db, err := sql.Open(d.driver, d.path)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
 	f := form.EscapeSQL()
 
-	_, err := d.DB.Exec(fmt.Sprintf(`
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(fmt.Sprintf(`
 	insert into RegistrationRequests 
-		(firstname, lastname, email, school, class, phones, comment, time)
-		values('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+		(firstname, lastname, email, school, class, phones, info, time, remark)
+		values('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '')
 	`,
-		f.Firstname, f.Lastname, f.Email, f.School, f.Class, f.Phones, f.Comment, f.Time,
+		f.Firstname, f.Lastname, f.Email, f.School, f.Class, f.Phones, f.Info, f.Time,
 	))
 
-	return err
+	if err != nil {
+		err2 := tx.Rollback()
+		if err2 != nil {
+			return errors.New(err.Error() + "\n" + err2.Error())
+		}
+		return err
+	} else {
+		err = tx.Commit()
+		return err
+	}
 }

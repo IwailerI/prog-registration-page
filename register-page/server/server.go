@@ -1,13 +1,10 @@
 package server
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
-	"web-server/db_csv"
 	"web-server/db_sqlite"
 	"web-server/registrationform"
 )
@@ -24,40 +21,7 @@ var DB Database
 
 var registerPage, failurePage, succesPage []byte
 
-var Port string
 var DebugPrint bool
-
-type DatabaseType int
-
-const (
-	SQLite DatabaseType = iota
-	CSV
-)
-
-var databaseTypeString = [...]string{"sqlite", "csv"}
-
-func (dt DatabaseType) String() string {
-	if int(dt) >= len(databaseTypeString) || dt < 0 {
-		return "error"
-	}
-	return databaseTypeString[dt]
-}
-
-func (dt *DatabaseType) Set(v string) error {
-	for i, n := range databaseTypeString {
-		if v == n {
-			*dt = DatabaseType(i)
-			return nil
-		}
-	}
-	return errors.New("must be one of " + strings.Join(databaseTypeString[:], ", "))
-}
-
-func (dt *DatabaseType) Type() string {
-	return "DatabaseType"
-}
-
-var DBType DatabaseType = SQLite
 
 func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -74,6 +38,7 @@ func registerPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		entry := registrationform.Form{}
+
 		entry.Firstname = r.FormValue("vFirstName")
 		entry.Lastname = r.FormValue("vLastName")
 
@@ -128,15 +93,7 @@ func failurePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func initDB() {
-	switch DBType {
-	case SQLite:
-		DB = new(db_sqlite.Database)
-	case CSV:
-		DB = new(db_csv.Database)
-	default:
-		log.Fatal("Unsuported database type")
-	}
-
+	DB = new(db_sqlite.Database)
 	DB.SetDebugPrint(DebugPrint)
 }
 
@@ -168,10 +125,10 @@ func Start() {
 		log.Fatal(err)
 	}
 
-	log.Println("Server listening on port " + Port)
+	log.Println("Server listening on port 8080")
 
 	http.HandleFunc("/", registerPageHandler)
 	http.HandleFunc("/succes", succesPageHandler)
 	http.HandleFunc("/failure", failurePageHandler)
-	log.Fatal(http.ListenAndServe(":"+Port, nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

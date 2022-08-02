@@ -25,7 +25,7 @@ type EscapedForm struct {
 	School    string
 	Class     string
 	Phones    string
-	Comment   string
+	Info      string
 	Time      string
 }
 
@@ -108,35 +108,12 @@ func (r Form) IsValid() (valid bool, reason string) {
 func (r Form) EscapeSQL() EscapedForm {
 	f := EscapedForm{}
 	f.Class = strings.ReplaceAll(r.Class, "'", "''")
-	f.Comment = strings.ReplaceAll(r.Comment, "'", "''")
+	f.Info = strings.ReplaceAll(r.Comment, "'", "''")
 	f.Email = strings.ReplaceAll(r.Email, "'", "''") // just in case
 	f.Firstname = strings.ReplaceAll(r.Firstname, "'", "''")
 	f.Lastname = strings.ReplaceAll(r.Lastname, "'", "''")
 	f.Phones = strings.ReplaceAll(r.GetPhones(), "'", "''") // just in case
 	f.School = strings.ReplaceAll(r.School, "'", "''")
-
-	Y, M, D := r.Time.Date()
-	h, m, s := r.Time.Clock()
-	micro := r.Time.Nanosecond() / 1_000_000
-	f.Time = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d.%03d", Y, M, D, h, m, s, micro)
-
-	return f
-}
-
-func go_escape(s string) string {
-	s = fmt.Sprintf("%q", s)
-	return s[1 : len(s)-1] // okay because " is one byte
-}
-
-func (r Form) EscapeCSV() EscapedForm {
-	f := EscapedForm{}
-	f.Class = go_escape(r.Class)
-	f.Comment = go_escape(r.Comment)
-	f.Email = go_escape(r.Email) // just in case
-	f.Firstname = go_escape(r.Firstname)
-	f.Lastname = go_escape(r.Lastname)
-	f.Phones = go_escape(r.GetPhones()) // just in case
-	f.School = go_escape(r.School)
 
 	Y, M, D := r.Time.Date()
 	h, m, s := r.Time.Clock()
