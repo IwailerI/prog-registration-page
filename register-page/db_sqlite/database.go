@@ -58,15 +58,15 @@ func (d *Database) Create() error {
 	_, err = tx.Exec(`
 	create table if not exists RegistrationRequests (
 		student_id integer not null primary key,
-		firstname text not null,
-		lastname text not null,
-		remark text not null,
-		class text not null,
-		school text not null,
-		phones text not null,
-		email text not null,
-		info text not null,
-		time timestamp default current_timestamp
+		firstname text,
+		lastname text,
+		remark text,
+		class text,
+		school text,
+		phones text,
+		email text,
+		info text,
+		time text default current_timestamp
 	);
 	`)
 
@@ -84,7 +84,7 @@ func (d *Database) Create() error {
 
 func (d *Database) Add(form registrationform.Form) error {
 	if d.DebugPrint {
-		log.Printf("Adding entry %#v\n", form.EscapeSQL())
+		log.Printf("Adding entry %#v\n", form.EscapeSQL(true))
 	}
 
 	db, err := sql.Open(d.driver, d.path)
@@ -93,7 +93,7 @@ func (d *Database) Add(form registrationform.Form) error {
 	}
 	defer db.Close()
 
-	f := form.EscapeSQL()
+	f := form.EscapeSQL(true)
 
 	tx, err := db.Begin()
 	if err != nil {

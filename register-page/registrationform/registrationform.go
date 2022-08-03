@@ -1,7 +1,6 @@
 package registrationform
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -105,7 +104,7 @@ func (r Form) IsValid() (valid bool, reason string) {
 	return true, ""
 }
 
-func (r Form) EscapeSQL() EscapedForm {
+func (r Form) EscapeSQL(fullTimestamp bool) EscapedForm {
 	f := EscapedForm{}
 	f.Class = strings.ReplaceAll(r.Class, "'", "''")
 	f.Info = strings.ReplaceAll(r.Comment, "'", "''")
@@ -115,10 +114,11 @@ func (r Form) EscapeSQL() EscapedForm {
 	f.Phones = strings.ReplaceAll(r.GetPhones(), "'", "''") // just in case
 	f.School = strings.ReplaceAll(r.School, "'", "''")
 
-	Y, M, D := r.Time.Date()
-	h, m, s := r.Time.Clock()
-	micro := r.Time.Nanosecond() / 1_000_000
-	f.Time = fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d.%03d", Y, M, D, h, m, s, micro)
+	if fullTimestamp {
+		f.Time = r.Time.Format("2006-01-02 15:04:05.000")
+	} else {
+		f.Time = r.Time.Format("2006-01-02")
+	}
 
 	return f
 }
